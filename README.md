@@ -6,7 +6,7 @@ A caching proxy is an intermediary server that forwards client requests to the a
 
 - **Start the Caching Proxy Server**: You can start the caching proxy server by running the following command:
     ```sh
-    ./caching-proxy --origin <URL> --port <PORT>
+    caching-proxy --origin <URL> --port <PORT>
     ```Response
 
 - **Return Response with Headers and Cache the Response**: The caching proxy server returns the response along with the headers from the actual server. It also caches the response for future requests.
@@ -17,6 +17,6 @@ A caching proxy is an intermediary server that forwards client requests to the a
 
 - **Clear the Cache**: You can clear the cache by running the following command:
     ```sh
-    ./caching-proxy --clear-cache
+    caching-proxy --clear-cache
     ```
 # caching-proxy
