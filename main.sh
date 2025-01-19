@@ -10,4 +10,8 @@ if [ "$#" -ne 4 ] || [ "$1" != "--origin" ] || [ "$3" != "--port" ]; then
 fi
 
 # Assign arguments to variables
+URL=$2
+PORT=$4
 
+echo "$URL"
+echo "$PORT"
