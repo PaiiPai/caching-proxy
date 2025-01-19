@@ -19,4 +19,3 @@ A caching proxy is an intermediary server that forwards client requests to the a
     ```sh
     caching-proxy --clear-cache
     ```
-# caching-proxy
