@@ -13,5 +13,6 @@ fi
 URL=$2
 PORT=$4
 
-echo "$URL"
-echo "$PORT"
+cd ./caching-proxy
+
+node server.js "$PORT" "$URL"
