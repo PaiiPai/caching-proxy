@@ -18,7 +18,6 @@
   },
   "homepage": "https://github.com/PaiiPai/caching-proxy#readme",
   "dependencies": {
-    "express": "^4.21.2",
     "http-proxy-middleware": "^3.0.3",
     "morgan": "^1.10.0"
   }
