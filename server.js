@@ -1,37 +1,52 @@
 const http = require('http');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
+const Cache = require('./.cache/cache');
 const port = process.argv[2];
 const url = new URL(`https://${process.argv[3]}`);
+const cache = new Cache(url);
 
 const proxy = createProxyMiddleware({
   target: url,
   changeOrigin: true,
-  selfHandleResponse: true,
+  plugins: [
+    (proxyServer, options) => {
+      proxyServer.on('proxyReq', (tReq, tRes, proxyRes) => {
+        // Retrieve data from cache
+        const cachedData = cache.get(tReq.path);
+
+        if (cachedData !== undefined) {
+          // Pass the cached data and set header
+          // in proxy server response
+          proxyRes.setHeader('X-Cache', 'HIT');
+          proxyRes.end(cachedData);
+        }
+
+        let data = '';
+        tRes.on('data', (chunk) => {
+          data += chunk;
+        });
+
+        tRes.on('end', () => {
+          if (cachedData === undefined) {
+            cache.save(tReq.path, data);
+            proxyRes.setHeader('X-Cache', 'MISS');
+            proxyRes.end(data);
+          }
+        });
+      })
+    }
+  ]
 });
 
-const server = http.createServer();
+const server = http.createServer(proxy);
 
-server.on('request', (req, res) => {
+server.on('request', (req, res, next) => {
   console.log(`Request received for ${req.url}`);
-  let data = '';
-  // Apply proxy middleware to the request
-  proxy(req, res, (proxyRes) => {
-    proxyRes.on('data', (chunk) => {
-      data += chunk;
-    });
+});
 
-    proxyRes.on('end', () => {
-      res.setHeader('X-Cache', 'MISS');
-      res.writeHead('200', proxyRes.getHeaders()).end(data);
-    });
-
-    proxyRes.on('error', (err) => {
-      console.error('Error in proxy server response: ', err);
-      res.writeHead(500, { 'Content-Type': 'text/plain' });
-      res.end('Internal Server Error');
-    });
-  })
+server.on('error', (err) => {
+  console.error('Error occured: ', err);
 });
 
 server.listen(port, () => {
