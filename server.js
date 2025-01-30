@@ -56,7 +56,6 @@ const proxy = createProxyMiddleware({
       });
     }
   ],
-  logger: console
 });
 
 const server = http.createServer(proxy);
