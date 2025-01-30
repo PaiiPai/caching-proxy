@@ -2,6 +2,14 @@
 
 A caching proxy is an intermediary server that forwards client requests to the actual server and caches the responses. When a client makes a request, the caching proxy checks if it has a cached copy of the response. If it does, it returns the cached response to the client, reducing the need to contact the actual server. If the response is not cached, the proxy forwards the request to the actual server, retrieves the response, caches it, and then returns it to the client. This process helps improve performance, reduce latency, and decrease the load on the actual server.
 
+## Installation
+
+1. Clone this repository
+2. After that, run:
+    ```sh
+    install ./caching-proxy/caching-proxy.sh ~/bin/caching-proxy
+    ```
+
 ## Functionalities
 
 - **Start the Caching Proxy Server**: You can start the caching proxy server by running the following command:
