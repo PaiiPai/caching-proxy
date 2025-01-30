@@ -21,7 +21,6 @@ class Cache {
 	get(path) {
 		// Retrieve saved data from the cache
 		const jsonFile = fs.readFileSync('./data.json', { encoding: 'utf8' });
-		console.log(jsonFile);
 		const jsObj = JSON.parse(jsonFile);
 
 		if (!path) {

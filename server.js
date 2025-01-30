@@ -15,50 +15,54 @@ if (process.argv[2] === 'clear-cache') {
 const proxy = createProxyMiddleware({
   target: url,
   changeOrigin: true,
+  selfHandleResponse: true,
   plugins: [
     (proxyServer, options) => {
-      proxyServer.on('proxyReq', (tReq, tRes, proxyRes) => {
-        if(tReq.path === 'clear-cache') {
-          cache.clear();
-          tRes.writeHead(200, 'OK');
-          tRes.end('Cache cleared');
-        }
+      let path;
 
+      proxyServer.on('error', (err, req, res) => {
+        console.error('Error occured in proxy server: ', err);
+        res.end('Proxy server error...');
+      });
+
+      proxyServer.on('proxyReq', (proxyReq, proxyRes, res) => {
         // Retrieve data from cache
-        const cachedData = cache.get(tReq.path);
+        path = proxyReq.path;
+        const cachedData = cache.get(path);
 
         if (cachedData !== undefined) {
           // Pass the cached data and set header
           // in proxy server response
-          proxyRes.setHeader('X-Cache', 'HIT');
-          proxyRes.end(cachedData);
+          res.setHeader('X-Cache', 'HIT');
+          console.log('Data retrieved from cache');
+          res.end(cachedData);
         }
+      });
 
+      proxyServer.on('proxyRes', (proxyRes, req, res) => {
         let data = '';
-        tRes.on('data', (chunk) => {
+        proxyRes.on('data', (chunk) => {
           data += chunk;
         });
 
-        tRes.on('end', () => {
-          if (cachedData === undefined) {
-            cache.save(tReq.path, data);
-            proxyRes.setHeader('X-Cache', 'MISS');
-            proxyRes.end(data);
+        proxyRes.on('end', () => {
+          if (cache.get(path) === undefined) {
+            cache.save(path, data);
+            res.setHeader('X-Cache', 'MISS');
+            console.log('Data saved in cache');
+            res.end(data);
           }
         });
-      })
+      });
     }
-  ]
+  ],
+  logger: console
 });
 
 const server = http.createServer(proxy);
 
 server.on('request', (req, res, next) => {
   console.log(`Request received for ${req.url}`);
-});
-
-server.on('error', (err) => {
-  console.error('Error occured: ', err);
 });
 
 server.listen(port, () => {
