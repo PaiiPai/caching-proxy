@@ -3,3 +3,6 @@ node_modules
 
 # Cached data
 .cache/data.json
+
+# Environment
+.env
