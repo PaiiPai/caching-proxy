@@ -1,7 +1,7 @@
-const http = require('http');
-const { createProxyMiddleware } = require('http-proxy-middleware');
+import http from 'http';
+import { createProxyMiddleware } from require('http-proxy-middleware');
+import Cache from './.cache/cache';
 
-const Cache = require('./.cache/cache');
 const port = process.argv[2];
 const url = new URL(`https://${process.argv[3]}`);
 const cache = new Cache(url);
