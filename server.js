@@ -1,6 +1,6 @@
 import http from 'http';
-import { createProxyMiddleware } from require('http-proxy-middleware');
-import Cache from './.cache/cache';
+import { createProxyMiddleware } from 'http-proxy-middleware';
+import Cache from './.cache/cache.js';
 
 const port = process.argv[2];
 const url = new URL(`https://${process.argv[3]}`);

@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-class Cache {
+export default class Cache {
   constructor(origin, port) {
     this.origin = origin;
     this.port = port || 8000;
@@ -35,5 +35,3 @@ class Cache {
     fs.writeFileSync('./data.json', JSON.stringify(initData));
   }
 }
-
-module.exports = Cache;
