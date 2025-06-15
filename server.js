@@ -15,47 +15,63 @@ if (process.argv[2] === 'clear-cache') {
 const proxy = createProxyMiddleware({
   target: url,
   changeOrigin: true,
-  selfHandleResponse: true,
-  plugins: [
-    (proxyServer, options) => {
-      let path;
+  on: {
+    proxyReq: (proxyReq, req, res) => {
+      /* handle proxyReq */
+      // Retrieve data from cache
+      const path = proxyReq.path;
+      const cachedData = cache.get(path);
 
-      proxyServer.on('error', (err, req, res) => {
-        console.error('Error occured in proxy server: ', err);
-        res.end('Proxy server error...');
+      if (cachedData !== undefined) {
+        // set header to indicate cache hit
+        res.setHeader('X-Cache', 'HIT');
+        console.log('Data retrieved from cache');
+        // respond with cached data
+        res.end(cachedData);
+      } else {
+        // set header to indicate cache miss
+        res.setHeader('X-Cache', 'MISS');}
+    },
+    proxyRes: (proxyRes, req, res) => {
+      /* handle proxyRes */
+      // extract path from request and data from response
+      const path = req.url;
+      let data = '';
+      proxyRes.on('data', (chunk) => {
+        data += chunk;
       });
-
-      proxyServer.on('proxyReq', (proxyReq, proxyRes, res) => {
-        // Retrieve data from cache
-        path = proxyReq.path;
-        const cachedData = cache.get(path);
-
-        if (cachedData !== undefined) {
-          // Pass the cached data and set header
-          // in proxy server response
-          res.setHeader('X-Cache', 'HIT');
-          console.log('Data retrieved from cache');
-          res.end(cachedData);
+      
+      proxyRes.on('end', () => {
+        // save data in cache if not already cached
+        if (cache.get(path) === undefined) {
+          cache.save(path, data);
+          console.log('Data saved in cache');
         }
-      });
-
-      proxyServer.on('proxyRes', (proxyRes, req, res) => {
-        let data = '';
-        proxyRes.on('data', (chunk) => {
-          data += chunk;
-        });
-
-        proxyRes.on('end', () => {
-          if (cache.get(path) === undefined) {
-            cache.save(path, data);
-            res.setHeader('X-Cache', 'MISS');
-            console.log('Data saved in cache');
-            res.end(data);
-          }
-        });
-      });
-    }
-  ],
+      })
+    },
+    error: (err, req, res) => {
+      /* handle error */
+      console.error(`[${err.code}]: Error occured while processing request for ${req.url}`);
+      switch (err.code) {
+        case 'ETIMEDOUT':
+          res.writeHead(504, { 'Content-Type': 'text/plain' });
+          res.end('Gateway Timeout: The request took too long to complete.');
+          break;
+        case 'ECONNREFUSED':
+          res.writeHead(502, { 'Content-Type': 'text/plain' });
+          res.end('Bad Gateway: Connection refused by the target server.');
+          break;
+        case 'ENOTFOUND':
+          res.writeHead(404, { 'Content-Type': 'text/plain' });
+          res.end('Not Found: The requested resource could not be found.');
+          break;
+        default:
+          res.writeHead(500, { 'Content-Type': 'text/plain' });
+          res.end('Internal Server Error: An unexpected error occurred.');
+          break;
+      }
+    },
+  },
 });
 
 const server = http.createServer(proxy);
