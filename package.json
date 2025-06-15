@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Forward http requests to a remote server and cache http responses inside this proxy-server",
   "main": "server.js",
+  "type": "module",
   "scripts": {
     "server": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,7 +19,16 @@
   },
   "homepage": "https://github.com/PaiiPai/caching-proxy#readme",
   "dependencies": {
+    "dotenv": "^16.4.7",
     "http-proxy-middleware": "^3.0.3",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "redis": "^4.7.0"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
   }
 }
